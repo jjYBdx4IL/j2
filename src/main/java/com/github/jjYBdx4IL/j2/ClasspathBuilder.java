@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Profile;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -25,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileReader;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,37 +36,38 @@ public class ClasspathBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClasspathBuilder.class);
     
+    private List<String> enabledProfiles = new ArrayList<>() {{
+       add("java-9-plus"); 
+    }};
+    
     public ClasspathBuilder() {
     }
 
     public void run(CommandLine cmd) throws Exception {
-        System.out.println("------------------------------------------------------------");
         System.out.println(ClasspathBuilder.class.getSimpleName());
 
+        PomTree tree = new PomTree(Paths.get(".."), "java-9-plus");
+        tree.load();
         
-        MavenXpp3Reader reader = new MavenXpp3Reader();
-        Model model = reader.read(new FileReader("pom.xml"));        
-        checkNotNull(model);
+//        List<org.apache.maven.model.Dependency> deps = model.getDependencies();
+//        
+//        LOG.info("{}", deps);
         
-        List<org.apache.maven.model.Dependency> deps = model.getDependencies();
-        
-        
-        
-        RepositorySystem system = newRepositorySystem();
-
-        RepositorySystemSession session = newRepositorySystemSession(system);
-
-        Artifact artifact = new DefaultArtifact("org.apache.maven:maven-resolver-provider:3.6.0");
-
-        CollectRequest collectRequest = new CollectRequest();
-        collectRequest.setRoot(new Dependency(artifact, ""));
-        collectRequest.setRepositories(new ArrayList<>(Collections.singletonList(
-            new RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2/").build())));
-
-        CollectResult collectResult = system.collectDependencies(session, collectRequest);
-
-        collectResult.getRoot().accept(new ConsoleDependencyGraphDumper());
-
+//        RepositorySystem system = newRepositorySystem();
+//
+//        RepositorySystemSession session = newRepositorySystemSession(system);
+//
+//        Artifact artifact = new DefaultArtifact("org.apache.maven:maven-resolver-provider:3.6.0");
+//
+//        CollectRequest collectRequest = new CollectRequest();
+//        collectRequest.setRoot(new Dependency(artifact, ""));
+//        collectRequest.setRepositories(new ArrayList<>(Collections.singletonList(
+//            new RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2/").build())));
+//
+//        CollectResult collectResult = system.collectDependencies(session, collectRequest);
+//
+//        collectResult.getRoot().accept(new ConsoleDependencyGraphDumper());
+//
     }
 
     public static DefaultRepositorySystemSession newRepositorySystemSession(RepositorySystem system) {
